@@ -36,3 +36,11 @@ NOISE_MAX  = 0.1     # Error ceiling
 * Hardware benchmarking (compute cores vs. power consumption).
 * IoT/edge system design (performance vs. signal noise).
 * Compression or encoding analysis (bitrate vs. distortion).
+
+**Future implementations to add utility**
+
+* Real manifold learning embedding: (maybe Diffusion Maps, UMAP, or Laplacian Eigenmaps) instead of simple tanh or Gaussian kernels.
+* Real datasets validation: (network logs, sensor streams, crypto price series) with quant gains vs. baselines.
+* Surface novel insights: prove that the feedback loop could converge faster than random search, grid search, etc in high-d spaces.
+* Benchmark scale: GPU-acceleration to higher numerical orders of complexity. Maybe showcase of linear scaling or new speed records.
+* Dashboard integration: live user interactivity to help people plug their own streams with any purpose.
