@@ -1,4 +1,4 @@
-# Pareto Simulator — Anti-Attention README
+# Manifold-Pareto based Optimization
 
 **Purpose:**
 
