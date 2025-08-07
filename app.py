@@ -3,12 +3,18 @@
 from fastapi import FastAPI, Query
 import numpy as np
 import requests
-import random
 import asyncio
-from typing import Callable, Dict, List
 import uvicorn
+from typing import Callable, Dict, List
 
 app = FastAPI(title="Pareto Simulator Service")
+
+# --- Placeholder modules for future extensions ---
+# from modules.manifold_learning import advanced_manifold
+# from modules.real_data_feed import RealDataFeeder
+# from modules.metrics import ConvergenceMetrics
+# from modules.accelerator import Accelerator
+# from modules.ui import UIModule
 
 # --- plugin architecture: manifold functions ---
 def tanh_manifold(dims: np.ndarray) -> np.ndarray:
@@ -21,18 +27,14 @@ def graph_laplacian_manifold(dims: np.ndarray) -> np.ndarray:
 MANIFOLDS: Dict[str, Callable[[np.ndarray], np.ndarray]] = {
     "tanh": tanh_manifold,
     "graph": graph_laplacian_manifold,
-    # add more here...
+    # add more manifold plugins here...
 }
 
-# --- real-world continuum data ingestion (Coingecko free API) ---
+# --- real-world continuum data ingestion (placeholder) ---
 def fetch_continuum_data(coin: str = "bitcoin", days: int = 1) -> List[float]:
-    url = (
-        f"https://api.coingecko.com/api/v3/coins/{coin}/market_chart"
-        f"?vs_currency=usd&days={days}&interval=hourly"
-    )
-    r = requests.get(url, timeout=5)
-    data = r.json().get("prices", [])
-    # extract just the price values
+    """Placeholder for real-data feeder module; using Coingecko as example."""
+    url = f"https://api.coingecko.com/api/v3/coins/{coin}/market_chart?vs_currency=usd&days={days}&interval=hourly"
+    data = requests.get(url, timeout=5).json().get("prices", [])
     return [p[1] for p in data]
 
 # --- core simulation & optimization ---
@@ -70,6 +72,9 @@ def optimize(
                 best_err = err[idx]
         if pareto:
             low, high = max(dim_min, min(pareto)), min(dim_max, max(pareto))
+    # placeholder for metrics module
+    # ConvergenceMetrics.record(...)
+
     return {"dims": dims.tolist(), "throughput": thr.tolist(), "error": err.tolist()}
 
 # --- lightweight evolutionary hyperparam tuning ---
@@ -79,7 +84,7 @@ async def evolutionary_tune(
     base_params: dict,
     manifold_key: str
 ):
-    population = [base_params["noise_max"] * random.uniform(0.5, 1.5)
+    population = [base_params["noise_max"] * np.random.uniform(0.5, 1.5)
                   for _ in range(pop_size)]
     best = {"noise_max": base_params["noise_max"], "score": -1}
     for _ in range(generations):
@@ -93,17 +98,15 @@ async def evolutionary_tune(
                 noise_max=noise,
                 manifold_fn=MANIFOLDS[manifold_key],
             )
-            avg_throughput = np.mean(res["throughput"])
-            avg_error = np.mean(res["error"])
-            score = avg_throughput / (1 + avg_error)
+            avg_th, avg_err = np.mean(res["throughput"]), np.mean(res["error"])
+            score = avg_th / (1 + avg_err)
             scored.append((noise, score))
             if score > best["score"]:
                 best = {"noise_max": noise, "score": score}
-        # breed next gen
         scored.sort(key=lambda x: -x[1])
         top = [n for n, _ in scored[: pop_size // 2]]
-        population = [n + random.uniform(-0.01, 0.01) for n in top for _ in (0, 1)]
-        await asyncio.sleep(0)  # cooperative multitasking
+        population = [n + np.random.uniform(-0.01, 0.01) for n in top for _ in (0, 1)]
+        await asyncio.sleep(0)
     return best
 
 # --- endpoints ---
@@ -117,10 +120,11 @@ def simulate_endpoint(
     manifold: str = Query("tanh", enum=list(MANIFOLDS.keys())),
     real_data: bool = False
 ):
+    fn = MANIFOLDS[manifold]
     if real_data:
-        continuum = fetch_continuum_data()
-        noise_max = max(noise_max, np.std(continuum) / max(continuum))
-    return optimize(iterations, n_samples, dim_min, dim_max, noise_max, MANIFOLDS[manifold])
+        data = fetch_continuum_data()
+        noise_max = max(noise_max, np.std(data) / max(data))
+    return optimize(iterations, n_samples, dim_min, dim_max, noise_max, fn)
 
 @app.get("/tune")
 async def tune_endpoint(
@@ -143,4 +147,7 @@ async def tune_endpoint(
     return {"best_noise_max": best["noise_max"], "score": best["score"]}
 
 if __name__ == "__main__":
+    # placeholder: integrate Accelerator and UIModule before serve
+    # Accelerator.init()
+    # UIModule.setup()
     uvicorn.run(app, host="0.0.0.0", port=8000)
